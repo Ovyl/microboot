@@ -27,7 +27,7 @@
 
 /**
  * @brief Get image header from partition
- * 
+ *
  * @param partition Partition
  * @param image Image to read data into
  */
@@ -35,7 +35,7 @@ static void image_loader_get_image_header(flash_partition_t *partition, image_t 
 
 /**
  * @brief Get image footer from partition
- * 
+ *
  * @param partition Partition
  * @param image Image to read data into
  */
@@ -43,7 +43,7 @@ static void image_loader_get_image_footer(flash_partition_t *partition, image_t 
 
 /**
  * @brief Validate CRC-32 of image
- * 
+ *
  * @param partition Partition
  * @param image Image information
  * @return true Valid CRC-32
@@ -55,7 +55,7 @@ static bool image_loader_validate_image_crc(flash_partition_t *partition, image_
  * Functions
  *****************************************************************************/
 
-bool image_loader_get_image_info(flash_partition_t *partition, image_t *image) {    
+bool image_loader_get_image_info(flash_partition_t *partition, image_t *image) {
     if (!image)
         return false;
 
@@ -69,7 +69,7 @@ bool image_loader_get_image_info(flash_partition_t *partition, image_t *image) {
 
     // Ensure reported image size is not larger than partition
     uint32_t total_size = image->header.image_size;
-    total_size += sizeof(image_header_t);
+    total_size += sizeof(image_header_padded_t);
     total_size += sizeof(image_footer_t);
     if (total_size > partition->size) {
         return false;
@@ -84,9 +84,9 @@ bool image_loader_get_image_info(flash_partition_t *partition, image_t *image) {
     }
 
     // Calculate start address of image
-    image->image_start = (uint32_t *)(partition->addr + sizeof(image_header_t));
+    image->image_start = (uint32_t *)(partition->addr + sizeof(image_header_padded_t));
 
-    return true;
+    return image_loader_validate_image(partition, image);
 }
 
 bool image_loader_validate_image(flash_partition_t *partition, image_t *image) {
@@ -101,7 +101,7 @@ void image_loader_get_image_header(flash_partition_t *partition, image_t *image)
 void image_loader_get_image_footer(flash_partition_t *partition, image_t *image) {
     // Calculate offset to footer
     uint32_t offset = partition->addr;
-    offset += sizeof(image_header_t);
+    offset += sizeof(image_header_padded_t);
     offset += image->header.image_size;
 
     // Get reader footer from partition
@@ -115,6 +115,8 @@ bool image_loader_validate_image_crc(flash_partition_t *partition, image_t *imag
     if (!image)
         return false;
 
+    uint32_t calculated_crc32 = crc32(image->image_start, image->header.image_size);
+
     // Check CRC
-    return (crc32(image->image_start, image->header.image_size) == image->footer.crc);
+    return (calculated_crc32 == image->footer.crc);
 }

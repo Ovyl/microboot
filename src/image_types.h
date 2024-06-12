@@ -24,13 +24,21 @@ extern "C" {
 #define MICROBOOT_IMAGE_HEADER_MAGIC 0xE5B0074EU
 #define MICROBOOT_IMAGE_FOOTER_MAGIC 0xE5B007F0U
 
+/**
+ * @brief Image header size with padding.
+ *
+ */
+#ifndef IMAGE_HEADER_SIZE_BYTES
+#define IMAGE_HEADER_SIZE_BYTES 0x40U
+#endif
+
 /*****************************************************************************
  * Structs, Unions, Enums, & Typedefs
  *****************************************************************************/
 
 /**
  * @brief Image header typedef
- * 
+ *
  */
 typedef struct image_header_t {
     uint32_t magic;
@@ -41,8 +49,17 @@ typedef struct image_header_t {
 } __attribute__ ((packed)) image_header_t;
 
 /**
+ * @brief Header with padding
+ *
+ */
+typedef union image_header_padded_t {
+    image_header_t header;
+    uint8_t bytes[IMAGE_HEADER_SIZE_BYTES];
+} __attribute__ ((packed)) image_header_padded_t;
+
+/**
  * @brief Image footer typedef
- * 
+ *
  */
 typedef struct image_footer_t {
     uint32_t magic;
@@ -51,7 +68,7 @@ typedef struct image_footer_t {
 
 /**
  * @brief Image typedef
- * 
+ *
  */
 typedef struct image_t {
     image_header_t header;

@@ -5,6 +5,7 @@ import zlib
 
 IMG_TOOL_HEADER_MAGIC = 0xE5B0074E
 IMG_TOOL_FOOTER_MAGIC = 0xE5B007F0
+IMAGE_TOOL_HEADER_SIZE = 0x40
 
 class img_util_opts:
     endianness = 'little'
@@ -23,6 +24,7 @@ class img_header:
         buffer += self.version_major.to_bytes(2, endianness)
         buffer += self.version_minor.to_bytes(2, endianness)
         buffer += self.version_patch.to_bytes(2, endianness)
+        buffer += bytes(IMAGE_TOOL_HEADER_SIZE - 14)
         return buffer
 
 class img_footer:
@@ -75,11 +77,11 @@ class img_util:
         self.parser.add_argument("in_file", help="Input binary image.")
         self.parser.add_argument("out_file", help="Output MicroBoot image.")
         self.parser.add_argument("-e", "--endianness", type=str, help="Endianness [little|big] (default: 'little')")
-        
+
         self.parser.add_argument("--major", type=int, help="Version Major")
         self.parser.add_argument("--minor", type=int, help="Version Minor")
         self.parser.add_argument("--patch", type=int, help="Version Patch")
-        
+
     # Process arguments
     def parse_arguments(self):
 
@@ -98,7 +100,7 @@ class img_util:
 
     def generate_header(self):
         self.img_header.image_size = len(self.input_image)
-        
+
         self.img_header.version_major = self.args.major if self.args.major  else 0
         self.img_header.version_minor = self.args.minor if self.args.minor  else 0
         self.img_header.version_patch = self.args.patch if self.args.patch  else 0
