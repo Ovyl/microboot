@@ -29,7 +29,7 @@ extern "C" {
  *
  */
 #ifndef IMAGE_HEADER_SIZE_BYTES
-#define IMAGE_HEADER_SIZE_BYTES 0x40U
+#define IMAGE_HEADER_SIZE_BYTES 0x200U
 #endif
 
 /*****************************************************************************

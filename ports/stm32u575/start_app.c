@@ -40,7 +40,8 @@ void start_app(image_t *image) {
     // This part has a vector relocatable vector table
     // Set that register to the application's vector table
     SCB->VTOR = (uint32_t)app;
-
+    uint32_t *vtor = (uint32_t*)0xE002ED08;
+    *vtor = (uint32_t)app;
     // Memory barriers to insure instruction cache is fully flushed
     __DMB();
     __ISB();

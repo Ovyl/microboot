@@ -13,6 +13,7 @@
 #include "stm32u5xx.h"
 #include "stm32u5xx_hal_flash.h"
 #include "stm32u5xx_hal_flash_ex.h"
+#include <stdbool.h>
 
 /*****************************************************************************
  * Definitions
@@ -54,7 +55,7 @@
  * Functions
  *****************************************************************************/
 
-void flash_interface_flash_erase(uint32_t addr, uint32_t size) {
+bool flash_interface_flash_erase(uint32_t addr, uint32_t size) {
     // Unlock flash
     HAL_FLASH_Unlock();
 
@@ -76,10 +77,12 @@ void flash_interface_flash_erase(uint32_t addr, uint32_t size) {
     uint32_t page_error;
 
     // Erase flash
-    HAL_FLASHEx_Erase(&erase_struct, &page_error);
+    uint32_t ret = HAL_FLASHEx_Erase(&erase_struct, &page_error);
 
     // Lock flash
     HAL_FLASH_Lock();
+
+    return (ret == HAL_OK);
 }
 
 void flash_interface_flash_read(uint32_t addr, void *dst, uint32_t size) {
@@ -87,13 +90,15 @@ void flash_interface_flash_read(uint32_t addr, void *dst, uint32_t size) {
     memcpy(dst, src, size);
 }
 
-void flash_interface_flash_write(uint32_t addr, void *src, uint32_t size) {
+bool flash_interface_flash_write(uint32_t addr, void *src, uint32_t size) {
     // Unlock flash
     HAL_FLASH_Unlock();
 
     uint8_t *src_buf = (uint8_t*)src;
     uint32_t src_offset = 0;
     uint32_t dst_offset = addr;
+
+    uint32_t ret = HAL_OK;
 
     // Write bytes to flash
     while (src_offset < size) {
@@ -111,7 +116,7 @@ void flash_interface_flash_write(uint32_t addr, void *src, uint32_t size) {
         memcpy(tmp, &src_buf[src_offset], chunk_size);
 
         __disable_irq();
-        HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, dst_offset, (uint32_t)tmp);
+        ret = HAL_FLASH_Program(FLASH_TYPEPROGRAM_QUADWORD, dst_offset, (uint32_t)tmp);
         __enable_irq();
 
         src_offset += FLASH_WRITE_WIDTH_BYTES;
@@ -120,4 +125,6 @@ void flash_interface_flash_write(uint32_t addr, void *src, uint32_t size) {
 
     // Lock flash
     HAL_FLASH_Unlock();
+
+    return (ret == HAL_OK);
 }

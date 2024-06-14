@@ -5,7 +5,7 @@ import zlib
 
 IMG_TOOL_HEADER_MAGIC = 0xE5B0074E
 IMG_TOOL_FOOTER_MAGIC = 0xE5B007F0
-IMAGE_TOOL_HEADER_SIZE = 0x40
+IMAGE_TOOL_HEADER_SIZE = 0x200
 
 class img_util_opts:
     endianness = 'little'
