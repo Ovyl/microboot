@@ -41,7 +41,7 @@
  * @brief Number of sectors per bank
  *
  */
-#define FLASH_BANK_SIZE_PAGES (64)
+#define FLASH_BANK_SIZE_SECTORS (64)
 
 /*****************************************************************************
  * Variables
@@ -61,17 +61,24 @@ bool flash_interface_flash_erase(uint32_t addr, uint32_t size)
     HAL_FLASH_Unlock();
 
     uint32_t start = addr - FLASH_WRITE_OFFSET;
-    uint32_t inital_sector = start / FLASH_SECTOR_SIZE_BYTES;
+    uint32_t initial_sector = start / FLASH_SECTOR_SIZE_BYTES;
+
+    uint32_t bank = FLASH_BANK_1;
+
+    if (initial_sector >= FLASH_BANK_SIZE_SECTORS) {
+        bank = FLASH_BANK_2;
+        initial_sector -= FLASH_BANK_SIZE_SECTORS;
+    }
 
     uint32_t num_sectors = size / FLASH_SECTOR_SIZE_BYTES;
-    if ((size % FLASH_BANK_SIZE_PAGES) != 0) {
+    if ((size % FLASH_BANK_SIZE_SECTORS) != 0) {
         num_sectors++;
     }
 
     // Create erase structure
     FLASH_EraseInitTypeDef erase_struct;
-    erase_struct.Banks = FLASH_BANK_1;
-    erase_struct.Sector = inital_sector;
+    erase_struct.Banks = bank;
+    erase_struct.Sector = initial_sector;
     erase_struct.NbSectors = num_sectors;
     erase_struct.TypeErase = FLASH_TYPEERASE_SECTORS;
 

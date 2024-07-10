@@ -16,6 +16,7 @@ class img_header:
     version_major = 0
     version_minor = 0
     version_patch = 0
+    software_type = 0
 
     def to_bytes(self, endianness):
         buffer = bytes()
@@ -24,7 +25,8 @@ class img_header:
         buffer += self.version_major.to_bytes(2, endianness)
         buffer += self.version_minor.to_bytes(2, endianness)
         buffer += self.version_patch.to_bytes(2, endianness)
-        buffer += bytes(IMAGE_TOOL_HEADER_SIZE - 14)
+        buffer += self.software_type.to_bytes(4, endianness)
+        buffer += bytes(IMAGE_TOOL_HEADER_SIZE - len(buffer))
         return buffer
 
 class img_footer:
@@ -77,6 +79,8 @@ class img_util:
         self.parser.add_argument("in_file", help="Input binary image.")
         self.parser.add_argument("out_file", help="Output MicroBoot image.")
         self.parser.add_argument("-e", "--endianness", type=str, help="Endianness [little|big] (default: 'little')")
+        self.parser.add_argument("--software_type", type=int, help="Software type [int] (default: 0)")
+        self.parser.add_argument("--padded_size", type=int, help="Image header padded size in bytes [int] (default: 0x200)")
 
         self.parser.add_argument("--major", type=int, help="Version Major")
         self.parser.add_argument("--minor", type=int, help="Version Minor")
@@ -91,6 +95,9 @@ class img_util:
                 self.die("Endianness must be 'little' or 'big'.")
             self.options.endianness = self.args.endianness
 
+        if self.args.padded_size:
+            IMAGE_TOOL_HEADER_SIZE = self.args.padded_size
+
     def read_input_file(self):
         try:
             file = open(self.args.in_file, "rb")
@@ -104,6 +111,8 @@ class img_util:
         self.img_header.version_major = self.args.major if self.args.major  else 0
         self.img_header.version_minor = self.args.minor if self.args.minor  else 0
         self.img_header.version_patch = self.args.patch if self.args.patch  else 0
+        self.img_header.software_type = self.args.software_type if self.args.software_type else 0
+
         self.output_image += self.img_header.to_bytes(self.options.endianness)
 
     def generate_footer(self):

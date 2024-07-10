@@ -8,12 +8,12 @@
  * @brief Example flash interface for stm32u5xx
  */
 
-#include <stdint.h>
-#include <string.h>
 #include "stm32u5xx.h"
 #include "stm32u5xx_hal_flash.h"
 #include "stm32u5xx_hal_flash_ex.h"
 #include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
 
 /*****************************************************************************
  * Definitions
@@ -55,15 +55,16 @@
  * Functions
  *****************************************************************************/
 
-bool flash_interface_flash_erase(uint32_t addr, uint32_t size) {
+bool flash_interface_flash_erase(uint32_t addr, uint32_t size)
+{
     // Unlock flash
     HAL_FLASH_Unlock();
 
     uint32_t start = addr - FLASH_WRITE_OFFSET;
     uint32_t initial_page = start / FLASH_PAGE_SIZE_BYTES;
 
-    uint32_t num_pages = size/FLASH_PAGE_SIZE_BYTES;
-    if ((size % FLASH_BANK_SIZE_PAGES) != 0) {
+    uint32_t num_pages = size / FLASH_PAGE_SIZE_BYTES;
+    if ((size % FLASH_BANK_SIZE_SECTORS) != 0) {
         num_pages++;
     }
 
@@ -85,16 +86,18 @@ bool flash_interface_flash_erase(uint32_t addr, uint32_t size) {
     return (ret == HAL_OK);
 }
 
-void flash_interface_flash_read(uint32_t addr, void *dst, uint32_t size) {
+void flash_interface_flash_read(uint32_t addr, void *dst, uint32_t size)
+{
     void *src = (void *)addr;
     memcpy(dst, src, size);
 }
 
-bool flash_interface_flash_write(uint32_t addr, void *src, uint32_t size) {
+bool flash_interface_flash_write(uint32_t addr, void *src, uint32_t size)
+{
     // Unlock flash
     HAL_FLASH_Unlock();
 
-    uint8_t *src_buf = (uint8_t*)src;
+    uint8_t *src_buf = (uint8_t *)src;
     uint32_t src_offset = 0;
     uint32_t dst_offset = addr;
 
@@ -108,7 +111,8 @@ bool flash_interface_flash_write(uint32_t addr, void *src, uint32_t size) {
 
         if (bytes_remaining < FLASH_WRITE_WIDTH_BYTES) {
             chunk_size = bytes_remaining;
-        } else {
+        }
+        else {
             chunk_size = FLASH_WRITE_WIDTH_BYTES;
         }
 

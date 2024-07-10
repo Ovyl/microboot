@@ -8,14 +8,22 @@
  * @brief Handles loading and validating images
  */
 
-#include <stdbool.h>
 #include "image_loader.h"
-#include "flash_interface.h"
 #include "crc32.h"
+#include "flash_interface.h"
+#include <stdbool.h>
 
 /*****************************************************************************
  * Definitions
  *****************************************************************************/
+
+/**
+ * @brief Software type can be specified to ensure correct image type loaded
+ *
+ */
+#ifndef IMAGE_SOFTWARE_TYPE
+#define IMAGE_SOFTWARE_TYPE 0
+#endif
 
 /*****************************************************************************
  * Variables
@@ -55,7 +63,8 @@ static bool image_loader_validate_image_crc(flash_partition_t *partition, image_
  * Functions
  *****************************************************************************/
 
-bool image_loader_get_image_info(flash_partition_t *partition, image_t *image) {
+bool image_loader_get_image_info(flash_partition_t *partition, image_t *image)
+{
     if (!image)
         return false;
 
@@ -89,16 +98,23 @@ bool image_loader_get_image_info(flash_partition_t *partition, image_t *image) {
     return image_loader_validate_image(partition, image);
 }
 
-bool image_loader_validate_image(flash_partition_t *partition, image_t *image) {
+bool image_loader_validate_image(flash_partition_t *partition, image_t *image)
+{
+    if (image->header.software_type != IMAGE_SOFTWARE_TYPE) {
+        return false;
+    }
+
     // Validate image CRC
     return image_loader_validate_image_crc(partition, image);
 }
 
-void image_loader_get_image_header(flash_partition_t *partition, image_t *image) {
+void image_loader_get_image_header(flash_partition_t *partition, image_t *image)
+{
     flash_interface_flash_read(partition->addr, &image->header, sizeof(image_header_t));
 }
 
-void image_loader_get_image_footer(flash_partition_t *partition, image_t *image) {
+void image_loader_get_image_footer(flash_partition_t *partition, image_t *image)
+{
     // Calculate offset to footer
     uint32_t offset = partition->addr;
     offset += sizeof(image_header_padded_t);
@@ -108,7 +124,8 @@ void image_loader_get_image_footer(flash_partition_t *partition, image_t *image)
     flash_interface_flash_read(offset, &image->footer, sizeof(image_footer_t));
 }
 
-bool image_loader_validate_image_crc(flash_partition_t *partition, image_t *image) {
+bool image_loader_validate_image_crc(flash_partition_t *partition, image_t *image)
+{
     if (!partition)
         return false;
 
