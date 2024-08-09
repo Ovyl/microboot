@@ -41,7 +41,7 @@
  * @brief Number of sectors per bank
  *
  */
-#define FLASH_BANK_SIZE_SECTORS (64)
+#define FLASH_BANK_SIZE_SECTORS (16)
 
 /*****************************************************************************
  * Variables
